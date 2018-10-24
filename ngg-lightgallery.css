@@ -1,0 +1,22 @@
+#lightgallery {
+	overflow: hidden;
+}
+
+.ngglg-thumb {
+  float: left;
+  padding: 3px;
+  margin: 5px;
+  border: 1px solid #cccccc;
+}
+
+.lg-hide-items .lg-sub-html {
+  opacity: 0;
+  -webkit-transform: translate3d(-10px, 0, 0);
+  transform: translate3d(-10px, 0, 0);
+}
+
+.lg-clear {
+	clear: both;
+	float: none;
+	margin-bottom: 15px;
+}
