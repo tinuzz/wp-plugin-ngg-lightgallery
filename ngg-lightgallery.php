@@ -9,7 +9,7 @@
  * Author URI: http://www.grendelman.net/
  * Text Domain: ngglightgallery
  * Domain path: /lang
- * License: GPL2
+ * License: Apache License, Version 2.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
