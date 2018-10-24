@@ -113,3 +113,6 @@ lightGallery, on my own terms and without having to buy NextGEN Plus or Pro or
 any premium extensions, which meant: roll my own. So here it is, maybe it will
 help you.
 
+# Will you add it to the WordPress plugin directory?
+
+No, not likely.
