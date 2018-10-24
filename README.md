@@ -1,7 +1,7 @@
 # wp-plugin-ngg-lightgallery
 An opinionated WordPress plugin for using NextGEN Gallery with lightGallery
 
-## What's this?
+# What's this?
 
 * A [WordPress](https://www.wordpress.org/) plugin
 * that bundles [lightGallery](http://sachinchoolur.github.io/lightGallery/)
@@ -16,7 +16,7 @@ even work with NextGEN's shortcodes, but introduces two of its own. Basically,
 it needs the NextGEN Gallery database tables (whose names are hardcoded, so be
 careful), and that's about it.
 
-## What is it not?
+# What is it not?
 
 * suitable for general use
 * well documented
@@ -39,7 +39,7 @@ lot like the basic thumbnail gallery from NextGEN 1.9, if you remember it. If
 course, you can change the code and the CSS to make it look exactly as you
 want.
 
-The data for the galley (image names, paths, captions, meta-data) is queried
+The data for the gallery (image names, paths, captions, meta-data) is queried
 from the NextGEN database directly. No code from NextGEN Gallery is involved,
 thank goodness.
 
@@ -48,7 +48,7 @@ It comes with a few extras though, of which the most important are:
 * composed captions containing some meta-data
 * iframe support
 
-=== Video support ===
+## Video support
 
 If the plugin encounters an image whose name ends in '.mp4.jpg', it strips the
 '.jpg' off the name and opens the video file in lightGallery, using its
@@ -61,7 +61,7 @@ follow this easy 3-step plan:
 
 This plugin and lightGallery will do the rest.
 
-=== Composed captions ===
+## Composed captions
 
 NextGEN gallery stores some of the images' meta-data in its database, and this
 plugin displays some of it in the caption of the photos. The most important
@@ -78,7 +78,7 @@ Gallery. After importing meta-data from images, NextGEN calls a filter named
 'ngg_get_image_metadata', and this plugin responds to that filter by adding the
 GPS data to the data that NextGEN will store in its database.
 
-=== Iframe support ===
+## Iframe support
 
 The use for this is probably a little less obvious, so let me explain. The idea
 is, that when you click a thumnail in a gallery, or you swipe through a gallery
@@ -105,7 +105,7 @@ meta-data of the image ([Xmp.dc.description tag](http://www.exiv2.org/tags-xmp-d
 NextGEN Gallery will import this data and automatically put it in the
 description field. No manual changes required.
 
-## So why put it on Github?
+# So why put it on Github?
 
 I have been looking for a satisfactory way to show my photo galleries with
 NextGEN v2 (now v3) for a long time, before I decided that I wanted
