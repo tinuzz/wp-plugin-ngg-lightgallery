@@ -230,7 +230,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 				$sql = $wpdb->prepare( 'SELECT path, title, galdesc FROM wp_ngg_gallery g WHERE gid=%d', $atts['id']);
 				$gallery = $wpdb->get_row( $sql, ARRAY_A );
 				// Array ( [path] => /wp-content/gallery/2014-006-motor-loire-frankrijk [title] => Motorvakantie in de Loire )
-				$sql = $wpdb->prepare( 'SELECT p.*,g.path FROM wp_ngg_pictures p, wp_ngg_gallery g WHERE p.galleryid = g.gid AND p.galleryid=%d AND exclude=0 ORDER BY sortorder,filename', $atts['id']);
+				$sql = $wpdb->prepare( 'SELECT p.*,g.path FROM wp_ngg_pictures p, wp_ngg_gallery g WHERE p.galleryid = g.gid AND p.galleryid=%d AND exclude=0 ORDER BY filename', $atts['id']);
 				$res = $wpdb->get_results( $sql, ARRAY_A );
 
 				$out .= '<h3>' . htmlspecialchars( $gallery['galdesc'] ) . '</h3>';
