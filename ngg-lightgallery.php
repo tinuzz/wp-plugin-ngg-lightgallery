@@ -21,7 +21,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 	define( 'NGGLIGHTGALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 	define( 'NGGLIGHTGALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 	define( 'NGGLIGHTGALLERY_DIST', NGGLIGHTGALLERY_PLUGIN_URL . 'lib/lightgallery-2.3.0/' );
-	define( 'NGGLIGHTGALLERY_DLURL_PREFIX', '/photo/' );
+	define( 'NGGLIGHTGALLERY_DLURL_PREFIX', 'photo/' );
 	define( 'NGGLIGHTGALLERY_DLURL_PREFIX2', 'https://' . $_SERVER['SERVER_NAME'] . '/photo/' );
 	define( 'NGGLIGHTGALLERY_SHORTCODE1', 'ngglightgallery' );
 	define( 'NGGLIGHTGALLERY_SHORTCODE2', 'ngglightgallerytags' );
@@ -170,7 +170,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 				$dlpath = str_replace( 'wp-content/gallery', NGGLIGHTGALLERY_DLURL_PREFIX, $row['path'] );
 
 				if ( substr( $row['description'], 0, 5 ) == 'link:' ) {
-					$out .= '<a data-iframe="true" data-src="' . htmlspecialchars( substr( $row['description'], 5 ) ) . '">' . "\n";
+					$out .= '<a data-iframe="true" data-download-url="false" data-src="' . htmlspecialchars( substr( $row['description'], 5 ) ) . '">' . "\n";
 					$out .=   '<img class="ngglg-thumb" src="' . $tmbsrc  . '" />' . "\n";
 					$out .= '</a>' . "\n";
 					continue;
@@ -202,7 +202,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 						$postersrc = $imgsrc;
 					}
 					//$out .= '<a href="" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-html="#video' . $row['pid'] . '">' . "\n";
-					$out .= '<a href="" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-video=' . "'" .
+					$out .= '<a href="" data-download-url="false" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-video=' . "'" .
 						'{"source": [{"src":"' . $video_link . '", "type":"video/mp4"}], "attributes": {"preload": false, "controls": true}}' .
 						"'>" . "\n";
 					$out .=   '<img class="ngglg-thumb" src="' . $tmbsrc  . '" title="' . $row['filename'] . '"/>' . "\n";
