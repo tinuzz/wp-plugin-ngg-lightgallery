@@ -78,11 +78,6 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			}
 		}
 
-		function wp_enqueue_pannellum() {
-				wp_enqueue_style( 'pannellum', 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css' );
-				wp_enqueue_script( 'pannellum', 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js', array(), false, true );
-		}
-
 		function detect_shortcode() {
 			global $wp_query;
 			$posts = $wp_query->posts;
@@ -133,6 +128,9 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 				if ( $gurl ) { $description .= "&nbsp; $gpsc"; }
 				$description .= '<br />';
 				if ( $row['description'] ) {
+					if ( substr( $row['description'], 0, 10 ) == 'pannellum:' ) {
+						$row['description'] = substr( $row['description'], 10 );
+					}
 					$description .= $row['description'] . '<br />';
 				}
 				$description .= '<br />';
@@ -178,6 +176,14 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 					continue;
 				}
 
+				if ( substr( $row['description'], 0, 9 ) == 'pannellum' ) {
+					$iframe_url = '/wp/' . NGGLIGHTGALLERY_PANNELLUM_SLUG . '/' . $row['pid'];
+					$out .= '<a data-iframe="true" data-download-url="false" data-src="' . htmlspecialchars( $iframe_url ) . '" data-sub-html="#caption' . $row['pid'] . '">' . "\n";
+					$out .=   '<img class="ngglg-thumb" src="' . $tmbsrc  . '" />' . "\n";
+					$out .= '</a>' . "\n";
+
+					continue;
+				}
 
 				$n = @preg_match($video_re, $row ['filename'], $matches);
 
