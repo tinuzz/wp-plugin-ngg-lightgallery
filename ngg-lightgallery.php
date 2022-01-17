@@ -50,7 +50,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			add_shortcode( 'nggenav', array( &$this, 'shortcode_nggenav' ) );
 			// Filter to add GPS information to image metadata
 			add_filter ('ngg_get_image_metadata', array (&$this, 'ngg_get_image_metadata'), 10, 2);
-		  add_action( 'parse_request', array( &$this, 'parse_request' ), 1 );
+			add_action( 'parse_request', array( &$this, 'parse_request' ), 1 );
 		}
 
 		function wp_enqueue_scripts( $force = false ) {
@@ -404,6 +404,156 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			return $meta;
 		}
 
+		/**
+		 * A function to get the real request URI, stripped of all the basics. What
+		 * this function returns is meant to be used to match against, for URIs
+		 * that Trackserver must handle.
+		 *
+		 * The code is borrowed from WP's own parse_request() function.
+		 *
+		 * @since 4.4
+		 */
+		function get_request_uri() {
+			global $wp_rewrite;
+
+			if ( ! $wp_rewrite->using_permalinks() || $wp_rewrite->using_index_permalinks() ) {
+				$this->url_prefix = '/' . $wp_rewrite->index;
+			}
+
+			$home_path       = trim( parse_url( home_url(), PHP_URL_PATH ), '/' ) . $this->url_prefix;
+			$home_path_regex = sprintf( '|^%s|i', preg_quote( $home_path, '|' ) );
+
+			$pathinfo         = isset( $_SERVER['PATH_INFO'] ) ? $_SERVER['PATH_INFO'] : '';
+			list( $pathinfo ) = explode( '?', $pathinfo );
+			$pathinfo         = trim( $pathinfo, '/' );
+			$pathinfo         = preg_replace( $home_path_regex, '', $pathinfo );
+			$pathinfo         = trim( $pathinfo, '/' );
+
+			list( $request_uri ) = explode( '?', $_SERVER['REQUEST_URI'] );
+			$request_uri         = str_replace( $pathinfo, '', $request_uri );
+			$request_uri         = trim( $request_uri, '/' );
+			$request_uri         = preg_replace( $home_path_regex, '', $request_uri );
+			$request_uri         = trim( $request_uri, '/' );
+
+			// The requested permalink is in $pathinfo for path info requests and $request_uri for other requests.
+			if ( ! empty( $pathinfo ) && ! preg_match( '|^.*' . preg_quote( $wp_rewrite->index, '|' ) . '$|', $pathinfo ) ) {
+				$requested_path = $pathinfo;
+			} else {
+				// If the request uri is the index, blank it out so that we don't try to match it against a rule.
+				if ( $request_uri === $wp_rewrite->index ) {
+					$request_uri = '';
+				}
+				$requested_path = $request_uri;
+			}
+			return $requested_path;
+		}
+
+		/**
+		 * Parse the request, and hijack requests that match /pannellum/<id>
+		 */
+		function parse_request( $wp ) {
+			$req_uri = $this->get_request_uri();
+			$pattern = '/^' . preg_quote( NGGLIGHTGALLERY_PANNELLUM_SLUG ) . '\/(?<id>\d+)\/?$/';
+
+			// Match the URL
+			$n = preg_match( $pattern, $req_uri, $matches );
+			if ( $n === 1 ) {
+					$this->pannellum_html( $matches['id'] );
+					die();
+			}
+			return $wp;
+		}
+
+		function pannellum_config() {
+			$cfg = $this->script_config;
+			foreach ( (array) $cfg as $key => $value ) {
+				if ( ! is_scalar( $value ) ) {
+					continue;
+				}
+				$cfg[ $key ] = html_entity_decode( (string) $value, ENT_QUOTES, 'UTF-8' );
+			}
+			$script = "var pannellum_config = " . wp_json_encode( $cfg ) . ';';
+			echo $script;
+			echo "\n";
+		}
+
+		function pannellum_html( $pic_id ) {
+			global $wpdb;
+
+			$pic_id     = intval( $pic_id );
+			$sql        = $wpdb->prepare( 'SELECT p.*,g.path FROM wp_ngg_pictures p, wp_ngg_gallery g WHERE p.galleryid = g.gid AND p.pid=%d AND exclude=0', $pic_id);
+			$res        = $wpdb->get_results( $sql, ARRAY_A );
+			$row        = $res[0];
+			$dirname    = trailingslashit( end( explode( '/', trim( $row['path'], '/' ) ) ) );
+			$imgsrc1    = trailingslashit( get_home_url() ) . trailingslashit( ltrim( $row['path'], '/' ) ) . $row['filename']; // resized by NextGen
+			$imgsrc2    = NGGLIGHTGALLERY_DLURL_PREFIX2 . $dirname . $row['filename'];   // full size
+			$p_opt      = '';
+			$wp_version = get_bloginfo( 'version' );
+
+			// Expand pic description for Pannellum config: 'pannellum(opt1:val1;opt2:val2):...'.
+			$valid_options = array( 'yaw', 'pitch', 'hfov', 'autoRotate', 'autoRotateInactivityDelay' );
+			$n = preg_match( '/^pannellum(\((?<opt>.*)\))?:/', $row['description'], $matches );
+			if ( $matches['opt'] ) {
+				$opts = explode( ';', $matches['opt'] );
+				foreach ($opts as $o) {
+					$kv = explode( ':', $o );
+					if (in_array( $kv[0], $valid_options ) ) {
+						$p_opt .= '        "' . $kv[0] . '": ' . (int) $kv[1] . ",\n";
+					}
+				}
+				$p_opt = trim( $p_opt );
+			}
+
+			echo <<<EOF
+<html>
+  <head>
+    <title>{$row['filename']}</title>
+    <link rel="stylesheet" id="pannellum-css"  href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css?ver=${wp_version}" type="text/css" media="all" />
+    <style>
+      .pnlm-ngglg {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pannellum${pic_id}" class="pnlm-ngglg"></div>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js?ver=${wp_version}" id="pannellum-js"></script>
+    <script type="text/javascript">
+      // Check max texture size to see what image we should load
+      var canvas = document.createElement('canvas');
+      var gl = canvas.getContext('experimental-webgl');
+      var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+      var extension = gl.getExtension('WEBGL_lose_context');
+      if (extension)
+        extension.loseContext();
+
+      var src1 = '${imgsrc1}';
+      var src2 = '${imgsrc2}';
+
+      if (maxSize < 8192) {
+        var src = src1;
+      } else {
+        var src = src2;
+      }
+
+      pannellum.viewer('pannellum${pic_id}', {
+        "type": "equirectangular",
+        "panorama": src,
+        "autoLoad": true,
+        ${p_opt}
+        "orientationOnByDefault": false,
+        "compass": false
+      });
+    </script>
+  </body>
+</html>
+EOF;
+
+		}
 
 	}  // Class
 }  // If
