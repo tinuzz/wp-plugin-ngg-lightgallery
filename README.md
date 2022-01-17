@@ -7,6 +7,7 @@ An opinionated WordPress plugin for using NextGEN Gallery with lightGallery
 * that bundles [lightGallery](http://sachinchoolur.github.io/lightGallery/)
 * for use with [NextGEN Gallery](https://wordpress.org/plugins/nextgen-gallery/)
 * and offers some extra features, like integration with [Trackserver](https://wordpress.org/plugins/trackserver/)
+* and integrated displaying of panorama images with [Pannellum](https://pannellum.org/)
 * but is very opinionated in how things should look.
 
 It doesn't actually integrate with NextGEN gallery. For example, it doesn't use
@@ -104,6 +105,46 @@ What I usually do, after I create a screenshot, is put the link in the
 meta-data of the image ([Xmp.dc.description tag](http://www.exiv2.org/tags-xmp-dc.html)).
 NextGEN Gallery will import this data and automatically put it in the
 description field. No manual changes required.
+
+## Panoramas with Pannellum
+
+Support for displaying panorama images with [Pannellum] is fully integrated in
+this plugin and doesn't need any external code or configuration. It is
+implemented in two steps:
+
+1. A custom (hardcoded) WordPress slug ('pannellum') is handled fully by this
+	 plugin and bypasses all other WordPress code. Through this slug, the plugin
+   outputs a HTML page, that contains nothing else than a Pannellum viewer for the
+   image ID that is passed in the URL.
+2. By using 'pannellum' at the start of an image description in NextGEN,
+	 LightGallery will display an iframe with the Pannellum viewer in it.
+
+Pannellum uses WebGL to display the image, and this comes with some limitations
+regarding image size. In particular, mobile devices can have trouble displaying
+a full size equirectangular panorama, and sometimes need a smaller image. The
+plugin tries to query the environment and decide whether to use a full size
+original image, or the one from the NextGEN gallery, which is expected to be
+resized / optimized for the web.
+
+The plugin has a defined constant, NGGLIGHTGALLERY_DLURL_PREFIX2, that contains
+the URL prefix to the location where full size original images are expected.
+
+So, to recap:
+
+* On large / powerful devices, this plugin links the Pannellum viewer to a full
+  size original image, living at a hardcoded location outside the NextGEN
+  gallery folder.
+* On devices with limited WebGL capabilites, the Pannellum viewer is linked to
+  the image in the NextGEN gallery folder, which is expected to be resized.
+
+The method used for querying the browser is this:
+
+```
+      var gl = canvas.getContext('experimental-webgl');
+      var maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+```
+
+where maxSize < 8192 is considered 'small'.
 
 # So why put it on Github?
 
