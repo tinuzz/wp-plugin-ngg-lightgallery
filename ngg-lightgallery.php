@@ -230,14 +230,13 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			$parent = wp_get_post_parent_id( get_the_ID() );
 			$title  = get_the_title( $parent );
 			$link   = get_permalink( $parent );
-			echo '<a href="' . $link . '">Back to ' . esc_html( $title ) . '</a><br><br>';
+			$out    = '';
 
 			$defaults = array(
 				'id' => false,
 			);
 			$atts = shortcode_atts( $defaults, $atts, $this->shortcode1 );
 
-			$out = '';
 			if ( $atts['id'] ) {
 				$sql = $wpdb->prepare( 'SELECT path, title, galdesc FROM wp_ngg_gallery g WHERE gid=%d', $atts['id']);
 				$gallery = $wpdb->get_row( $sql, ARRAY_A );
