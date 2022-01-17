@@ -113,11 +113,14 @@ this plugin and doesn't need any external code or configuration. It is
 implemented in two steps:
 
 1. A custom (hardcoded) WordPress slug ('pannellum') is handled fully by this
-	 plugin and bypasses all other WordPress code. Through this slug, the plugin
+   plugin and bypasses all other WordPress code. Through this slug, the plugin
    outputs a HTML page, that contains nothing else than a Pannellum viewer for the
    image ID that is passed in the URL.
 2. By using 'pannellum' at the start of an image description in NextGEN,
-	 LightGallery will display an iframe with the Pannellum viewer in it.
+   LightGallery will display an iframe with the Pannellum viewer in it. Aside
+   from some very small details, this is the same as specifying
+   'link:https://yoursite/pannellum/<image_id>' in the description, to invoke the
+   iframe directly.
 
 Pannellum uses WebGL to display the image, and this comes with some limitations
 regarding image size. In particular, mobile devices can have trouble displaying
@@ -128,6 +131,8 @@ resized / optimized for the web.
 
 The plugin has a defined constant, NGGLIGHTGALLERY_DLURL_PREFIX2, that contains
 the URL prefix to the location where full size original images are expected.
+
+The value, only changeable in the code is `https://' . $_SERVER['SERVER_NAME'] . '/photo/'`.
 
 So, to recap:
 
