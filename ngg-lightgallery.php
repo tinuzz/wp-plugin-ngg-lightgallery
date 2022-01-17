@@ -20,22 +20,26 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 
 	define( 'NGGLIGHTGALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 	define( 'NGGLIGHTGALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-	define( 'NGGLIGHTGALLERY_JSLIB', NGGLIGHTGALLERY_PLUGIN_URL . 'lib/' );
+	define( 'NGGLIGHTGALLERY_DIST', NGGLIGHTGALLERY_PLUGIN_URL . 'lib/lightgallery-2.3.0/' );
 	define( 'NGGLIGHTGALLERY_DLURL_PREFIX', '/photo/' );
+	define( 'NGGLIGHTGALLERY_DLURL_PREFIX2', 'https://' . $_SERVER['SERVER_NAME'] . '/photo/' );
 	define( 'NGGLIGHTGALLERY_SHORTCODE1', 'ngglightgallery' );
 	define( 'NGGLIGHTGALLERY_SHORTCODE2', 'ngglightgallerytags' );
+	define( 'NGGLIGHTGALLERY_PANNELLUM_SLUG', 'pannellum' );
 
 	/**
 	 * The main plugin class.
 	 */
 	class NggLightGallery {
 
-		var $shortcode1   = NGGLIGHTGALLERY_SHORTCODE1;
-		var $shortcode2   = NGGLIGHTGALLERY_SHORTCODE2;
-		var $have_scripts = false;
-		var $need_scripts = false;
+		var $shortcode1    = NGGLIGHTGALLERY_SHORTCODE1;
+		var $shortcode2    = NGGLIGHTGALLERY_SHORTCODE2;
+		var $have_scripts  = false;
+		var $need_scripts  = false;
+		var $script_config = array();
 
 		function __construct() {
+			$this->url_prefix = '';
 			$this->add_actions();
 		}
 
@@ -46,14 +50,30 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			add_shortcode( 'nggenav', array( &$this, 'shortcode_nggenav' ) );
 			// Filter to add GPS information to image metadata
 			add_filter ('ngg_get_image_metadata', array (&$this, 'ngg_get_image_metadata'), 10, 2);
+		  add_action( 'parse_request', array( &$this, 'parse_request' ), 1 );
 		}
 
 		function wp_enqueue_scripts( $force = false ) {
 			if ( $force || $this->detect_shortcode() ) {
 
 				wp_enqueue_script("jquery");
-				wp_enqueue_style( 'lightgallery', NGGLIGHTGALLERY_PLUGIN_URL . 'lib/lightgallery/css/lightgallery.css' );
-				wp_enqueue_script( 'lightgallery', NGGLIGHTGALLERY_PLUGIN_URL . 'lib/lightgallery/js/lightgallery-all.js', array(), false, true );
+				wp_enqueue_style( 'lightgallery', NGGLIGHTGALLERY_DIST . 'css/lightgallery-bundle.css' );
+				wp_enqueue_script( 'lightgallery', NGGLIGHTGALLERY_DIST . 'lightgallery.umd.js', array(), false, true );
+
+				/* LightGallery plugins */
+				wp_enqueue_script( 'lg-autoplay', NGGLIGHTGALLERY_DIST . 'plugins/autoplay/lg-autoplay.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-comment', NGGLIGHTGALLERY_DIST . 'plugins/comment/lg-comment.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-fullscreen', NGGLIGHTGALLERY_DIST . 'plugins/fullscreen/lg-fullscreen.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-hash', NGGLIGHTGALLERY_DIST . 'plugins/hash/lg-hash.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-medium-zoom', NGGLIGHTGALLERY_DIST . 'plugins/mediumZoom/lg-medium-zoom.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-pager', NGGLIGHTGALLERY_DIST . 'plugins/pager/lg-pager.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-rel-capt', NGGLIGHTGALLERY_DIST . 'plugins/relativeCaption/lg-relative-caption.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-rotate', NGGLIGHTGALLERY_DIST . 'plugins/rotate/lg-rotate.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-share', NGGLIGHTGALLERY_DIST . 'plugins/share/lg-share.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-thumbnail', NGGLIGHTGALLERY_DIST . 'plugins/thumbnail/lg-thumbnail.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-video', NGGLIGHTGALLERY_DIST . 'plugins/video/lg-video.min.js', array(), false, true );
+				wp_enqueue_script( 'lg-zoom', NGGLIGHTGALLERY_DIST . 'plugins/zoom/lg-zoom.min.js', array(), false, true );
+
 				wp_enqueue_style( 'ngg-lightgallery', NGGLIGHTGALLERY_PLUGIN_URL . 'ngg-lightgallery.css', array(), time() );
 				wp_register_script( 'ngg-lightgallery', NGGLIGHTGALLERY_PLUGIN_URL . 'ngg-lightgallery.js', array(), time(), true );
 				// Localize here
@@ -62,6 +82,11 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 				// Instruct wp_footer() that we already have the scripts.
 				$this->have_scripts = true;
 			}
+		}
+
+		function wp_enqueue_pannellum() {
+				wp_enqueue_style( 'pannellum', 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css' );
+				wp_enqueue_script( 'pannellum', 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js', array(), false, true );
 		}
 
 		function detect_shortcode() {
@@ -95,23 +120,6 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 			$video_re = '/\.(mp4|flv)\.jpg$/i';
 
 			$out = '';
-
-			// Output hidden video divs
-			foreach ($res as $row) {
-				$n = @preg_match($video_re, $row ['filename'], $matches);
-
-				if ($n == 1) {
-					$video_filename = substr( $row['filename'], 0, -4 );
-					$video_link = get_home_url() . '/' . $row['path'] . '/' . $video_filename;
-
-					$out .= '<div style="display:none;" id="video' . $row['pid'] .'">' .
-						'  <video class="lg-video-object lg-html5" controls preload="none">' .
-						'    <source src="' . $video_link . '" type="video/mp4">' .
-						'    Your browser does not support HTML5 video.' .
-						'  </video>' .
-						'</div>';
-				}
-			}
 
 			// Output captions in separate divs
 			foreach ($res as $row) {
@@ -155,7 +163,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 
 				$out .= '<div style="display:none;" id="caption' . $row['pid'] .'">' .
 					$description .
-					'</div>';
+					'</div>' . "\n";
 			}
 
 	    static $num_galleries = 0;
@@ -185,6 +193,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 					$poster_suffix = $row['path'] . '/poster/' . $video_filename . '.poster.jpg';
 					$poster_path = ABSPATH . '/' . $poster_suffix;
 					$poster_url  = get_home_url() . '/' . $poster_suffix;
+					$video_link = get_home_url() . '/' . $row['path'] . '/' . $video_filename;
 
 					if ( file_exists( $poster_path ) ) {
 						$postersrc = $poster_url;
@@ -192,7 +201,10 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 					else {
 						$postersrc = $imgsrc;
 					}
-					$out .= '<a href="" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-html="#video' . $row['pid'] . '">' . "\n";
+					//$out .= '<a href="" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-html="#video' . $row['pid'] . '">' . "\n";
+					$out .= '<a href="" data-poster="' . $postersrc . '" data-sub-html="#caption' . $row['pid'] . '" data-video=' . "'" .
+						'{"source": [{"src":"' . $video_link . '", "type":"video/mp4"}], "attributes": {"preload": false, "controls": true}}' .
+						"'>" . "\n";
 					$out .=   '<img class="ngglg-thumb" src="' . $tmbsrc  . '" title="' . $row['filename'] . '"/>' . "\n";
 					$out .= '</a>' . "\n";
 				}
