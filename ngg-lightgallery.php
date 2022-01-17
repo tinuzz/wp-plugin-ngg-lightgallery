@@ -62,15 +62,9 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 
 				/* LightGallery plugins */
 				wp_enqueue_script( 'lg-autoplay', NGGLIGHTGALLERY_DIST . 'plugins/autoplay/lg-autoplay.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-comment', NGGLIGHTGALLERY_DIST . 'plugins/comment/lg-comment.min.js', array(), false, true );
 				wp_enqueue_script( 'lg-fullscreen', NGGLIGHTGALLERY_DIST . 'plugins/fullscreen/lg-fullscreen.min.js', array(), false, true );
 				wp_enqueue_script( 'lg-hash', NGGLIGHTGALLERY_DIST . 'plugins/hash/lg-hash.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-medium-zoom', NGGLIGHTGALLERY_DIST . 'plugins/mediumZoom/lg-medium-zoom.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-pager', NGGLIGHTGALLERY_DIST . 'plugins/pager/lg-pager.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-rel-capt', NGGLIGHTGALLERY_DIST . 'plugins/relativeCaption/lg-relative-caption.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-rotate', NGGLIGHTGALLERY_DIST . 'plugins/rotate/lg-rotate.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-share', NGGLIGHTGALLERY_DIST . 'plugins/share/lg-share.min.js', array(), false, true );
-				wp_enqueue_script( 'lg-thumbnail', NGGLIGHTGALLERY_DIST . 'plugins/thumbnail/lg-thumbnail.min.js', array(), false, true );
+				//wp_enqueue_script( 'lg-thumbnail', NGGLIGHTGALLERY_DIST . 'plugins/thumbnail/lg-thumbnail.min.js', array(), false, true );
 				wp_enqueue_script( 'lg-video', NGGLIGHTGALLERY_DIST . 'plugins/video/lg-video.min.js', array(), false, true );
 				wp_enqueue_script( 'lg-zoom', NGGLIGHTGALLERY_DIST . 'plugins/zoom/lg-zoom.min.js', array(), false, true );
 
