@@ -160,7 +160,7 @@ if ( ! class_exists( 'NggLightGallery' ) ) {
 					'</div>' . "\n";
 			}
 
-	    static $num_galleries = 0;
+			static $num_galleries = 0;
       $div_id = 'lightgallery' . ++$num_galleries;
 
 			$out .= '<div id="' . $div_id . '" class="lightgallery">';
