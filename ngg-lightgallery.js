@@ -1,17 +1,5 @@
 (function($) {
 
-  /*
-  $(".lightgallery").lightGallery({
-    'hideBarsDelay': 3000,
-    'controls': $(window).width() >= 768,
-    'showThumbByDefault': false,
-    'share': false,
-    'actualSize': false,
-    'videoMaxWidth': '90%',
-    'iframeMaxWidth': '90%'
-  });
-  */
-
   $(".lightgallery").each( function (i) {
 
     lg = lightGallery( this, {
@@ -19,9 +7,15 @@
       plugins: [ lgZoom, lgAutoplay, lgFullscreen, lgHash, lgVideo ],
       speed: 800,
       allowMediaOverlap: true,
-      /* toggleThumb: true, */
+      gotoNextSlideOnVideoEnd: false,
+      autoplayVideoOnSlide: true,
+      counter: false,
+      mobileSettings: {
+        controls: false,
+        showCloseIcon: true,
+        download: false
+      },
       pause: 3000   // autoplay interval
-      //preload: 1
     });
 
     // We want to hide the thumbnail bar by default. The plugin doesn't provide
@@ -45,7 +39,6 @@
     // Hide captions after sliding
     this.addEventListener('lgAfterSlide', () => {
         lg.outer.removeClass('lg-components-open');
-
     });
 
     // There is an issue with hidden iframes that causes content to not render
